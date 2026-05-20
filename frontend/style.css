@@ -1,0 +1,18 @@
+/* Smooth drop-zone highlight */
+#drop-zone.dragover {
+  border-color: #22d3ee;
+  background: rgba(34, 211, 238, 0.05);
+  transform: scale(1.01);
+}
+
+/* Verdict animations */
+@keyframes pulse-red {
+  0%, 100% { box-shadow: 0 0 30px rgba(239, 68, 68, 0.3); }
+  50%      { box-shadow: 0 0 60px rgba(239, 68, 68, 0.6); }
+}
+@keyframes pulse-green {
+  0%, 100% { box-shadow: 0 0 30px rgba(34, 197, 94, 0.3); }
+  50%      { box-shadow: 0 0 60px rgba(34, 197, 94, 0.6); }
+}
+.verdict-fake { animation: pulse-red 2s infinite; }
+.verdict-real { animation: pulse-green 2s infinite; }

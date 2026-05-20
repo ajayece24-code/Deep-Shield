@@ -1,0 +1,685 @@
+import { useState } from "react"
+import axios from "axios"
+
+function App() {
+
+const [url,setUrl]=useState("")
+const [file,setFile]=useState(null)
+
+const [loading,setLoading]=useState(false)
+const [result,setResult]=useState(null)
+const [error,setError]=useState(null)
+
+const [tab,setTab]=useState("url")
+
+const API="http://localhost:8000"
+
+
+const handleURLSubmit=async()=>{
+
+if(!url.trim()) return
+
+setLoading(true)
+setResult(null)
+setError(null)
+
+try{
+
+const res=
+await axios.post(
+`${API}/analyze`,
+{url}
+)
+
+setResult(res.data)
+
+}
+
+catch{
+
+setError(
+"Could not analyze URL."
+)
+
+}
+
+finally{
+
+setLoading(false)
+
+}
+
+}
+
+
+const handleFileSubmit=async()=>{
+
+if(!file) return
+
+setLoading(true)
+
+setResult(null)
+
+setError(null)
+
+const formData=
+new FormData()
+
+formData.append(
+"file",
+file
+)
+
+try{
+
+const res=
+await axios.post(
+`${API}/analyze`,
+formData,
+{
+headers:{
+"Content-Type":
+"multipart/form-data"
+}
+}
+)
+
+setResult(
+res.data
+)
+
+}
+
+catch{
+
+setError(
+"Upload failed. Backend may not be running."
+)
+
+}
+
+finally{
+
+setLoading(false)
+
+}
+
+}
+
+
+const isReal=
+result?.final_verdict==="REAL"
+
+
+return(
+
+<div>
+
+<header className="header">
+
+<div className="header-icon">
+D
+</div>
+
+<div>
+
+<div style={{
+fontWeight:700,
+fontSize:22
+}}>
+DeepShield
+</div>
+
+<div style={{
+fontSize:12,
+color:"#94a3b8"
+}}>
+Real-time Deepfake Detection
+</div>
+
+</div>
+
+</header>
+
+
+
+<div className="main">
+
+<h2 className="page-title">
+Is this video real?
+</h2>
+
+<p className="page-sub">
+Deepfake detection using EfficientNet + Wav2Vec2 + Fusion AI
+</p>
+
+
+<div className="ai-badges">
+
+<span>
+🎥 Visual AI
+</span>
+
+<span>
+🎙 Audio AI
+</span>
+
+<span>
+🧠 Fusion Engine
+</span>
+
+</div>
+
+
+
+<div className="tabs">
+
+<button
+className={`tab ${
+tab==="url"
+?
+"active"
+:
+""
+}`}
+
+onClick={()=>
+setTab("url")
+}
+>
+
+Paste URL
+
+</button>
+
+
+<button
+className={`tab ${
+tab==="file"
+?
+"active"
+:
+""
+}`}
+
+onClick={()=>
+setTab("file")
+}
+>
+
+Upload File
+
+</button>
+
+</div>
+
+
+
+{tab==="url"&&(
+
+<div className="url-row">
+
+<input
+className="url-input"
+
+value={url}
+
+onChange={(e)=>
+setUrl(
+e.target.value
+)
+}
+
+placeholder=
+"Paste video URL..."
+/>
+
+
+<button
+className="btn-analyze"
+
+onClick={
+handleURLSubmit
+}
+
+disabled={
+!url.trim()
+}
+>
+
+Analyze
+
+</button>
+
+</div>
+
+)}
+
+
+
+{tab==="file"&&(
+
+<div
+
+className="upload-box"
+
+onClick={()=>
+
+document
+.getElementById(
+"file-input"
+)
+.click()
+
+}
+
+>
+
+
+<input
+
+id="file-input"
+
+type="file"
+
+accept="video/*"
+
+style={{
+display:"none"
+}}
+
+onChange={(e)=>
+
+setFile(
+e.target.files[0]
+)
+
+}
+
+/>
+
+
+<div style={{
+fontSize:40,
+marginBottom:10
+}}>
+📁
+</div>
+
+
+<p>
+
+{
+file
+?
+file.name
+:
+"Click to upload video"
+}
+
+</p>
+
+
+<p style={{
+fontSize:12,
+color:"#94a3b8"
+}}>
+MP4 • MOV • AVI
+</p>
+
+
+{
+
+file &&
+
+<button
+
+className="btn-analyze"
+
+style={{
+marginTop:20
+}}
+
+onClick={(e)=>{
+
+e.stopPropagation()
+
+handleFileSubmit()
+
+}}
+
+>
+
+Analyze File
+
+</button>
+
+}
+
+
+</div>
+
+)}
+
+
+
+{loading&&(
+
+<div className="spinner-wrap">
+
+<div className="spinner"/>
+
+<h4>
+DeepShield AI Analysis Running...
+</h4>
+
+<p>
+
+Scanning frames •
+
+Analyzing voice •
+
+Fusion in progress
+
+</p>
+
+</div>
+
+)}
+
+
+
+{error&&(
+
+<div
+style={{
+
+background:"#fee2e2",
+
+padding:15,
+
+borderRadius:12,
+
+marginTop:20
+
+}}
+>
+
+{error}
+
+</div>
+
+)}
+
+
+
+
+{result&&(
+
+<div
+className={
+isReal
+?
+"result-real"
+:
+"result-fake"
+}
+>
+
+<div style={{
+
+display:"flex",
+
+justifyContent:"space-between",
+
+alignItems:"center"
+
+}}>
+
+
+<div>
+
+<div
+className={
+isReal
+?
+"verdict-real"
+:
+"verdict-fake"
+}
+>
+
+{
+result.final_verdict
+}
+
+</div>
+
+
+<div
+className={
+isReal
+?
+"confidence-real"
+:
+"confidence-fake"
+}
+>
+
+{
+result.final_confidence
+}% confident
+
+</div>
+
+</div>
+
+
+
+<div style={{
+fontSize:50
+}}>
+
+{
+isReal
+?
+"✅"
+:
+"⚠️"
+}
+
+</div>
+
+
+</div>
+
+
+
+<div className="scores">
+
+
+<div className="score-card">
+
+<div className="score-label">
+🎥 Visual AI
+</div>
+
+<div style={{
+fontSize:"12px",
+color:"#64748b",
+marginBottom:"8px"
+}}>
+Face manipulation detection
+</div>
+
+
+<div className="score-value">
+
+{
+result.visual?.confidence ||0
+}%
+
+</div>
+
+
+<div className="score-bar-bg">
+
+<div
+className="score-bar-visual"
+
+style={{
+width:
+`${result.visual?.confidence||0}%`
+}}
+/>
+
+</div>
+
+</div>
+
+
+
+
+<div className="score-card">
+
+<div className="score-label">
+🎙 Audio AI
+</div>
+
+<div style={{
+fontSize:"12px",
+color:"#64748b",
+marginBottom:"8px"
+}}>
+Voice synthesis detection
+</div>
+
+
+<div className="score-value">
+
+{
+result.audio?.confidence ||0
+}%
+
+</div>
+
+
+<div className="score-bar-bg">
+
+<div
+className="score-bar-audio"
+
+style={{
+width:
+`${result.audio?.confidence||0}%`
+}}
+/>
+
+</div>
+
+</div>
+
+</div>
+
+
+
+
+<div
+
+style={{
+
+marginTop:"20px",
+
+background:"white",
+
+padding:"18px",
+
+borderRadius:"14px",
+
+boxShadow:
+"0 3px 10px rgba(0,0,0,.05)"
+
+}}
+
+>
+
+<div style={{
+
+fontWeight:"600",
+
+marginBottom:"8px"
+
+}}>
+
+🧠 Fusion Engine Verdict
+
+</div>
+
+
+<div style={{
+
+fontSize:"14px",
+
+color:"#64748b"
+
+}}>
+
+Final decision generated by combining visual and audio confidence scores.
+
+</div>
+
+</div>
+
+
+
+
+<div style={{
+
+display:"flex",
+
+justifyContent:"space-between",
+
+marginTop:25,
+
+fontSize:13,
+
+color:"#64748b"
+
+}}
+
+>
+
+<div>
+
+📁 {
+result.filename
+}
+
+</div>
+
+
+<div>
+
+⏱ {
+result.processing_time_sec
+}s
+
+</div>
+
+</div>
+
+
+
+</div>
+
+)}
+
+</div>
+
+</div>
+
+)
+
+}
+
+export default App
